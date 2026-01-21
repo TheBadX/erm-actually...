@@ -16,10 +16,8 @@
       --c3:#2cff9a;
 
       --r:18px;
-      --gap:12px;
-
-      --topH: 104px;
-      --sideW: 360px;
+      --topH: 92px;
+      --sideW: 380px;
     }
 
     html,body{
@@ -34,8 +32,8 @@
       overflow:hidden;
     }
 
-    /* ===== TV layout: top bar + side chat ===== */
-    #playersBar{
+    /* ===== TOP BAR (solo titolo + bottoni) ===== */
+    #topbar{
       position: fixed;
       top: 12px;
       left: 12px;
@@ -55,54 +53,18 @@
       box-shadow: 0 18px 60px rgba(0,0,0,.35);
       backdrop-filter: blur(10px);
     }
-
-    .brand{
-      display:flex; flex-direction:column; gap:4px;
-      min-width: 260px;
-    }
+    .brand{ display:flex; flex-direction:column; gap:4px; min-width: 280px; }
     .brand .t{ font-weight: 1100; letter-spacing:.7px; font-size: 18px; }
     .brand .s{ color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing:.35px; }
 
-    .scores{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-      justify-content:center;
-      width: 100%;
-      max-width: 60vw;
-    }
-
-    .player{
-      display:flex; align-items:center; gap:10px;
-      padding: 8px 10px;
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.16);
-      box-shadow: inset 0 0 0 1px rgba(34,230,255,.07);
-    }
-
-    .pname{
-      min-width: 90px;
-      max-width: 150px;
-      padding: 6px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.18);
-      color: var(--text);
-      font-weight: 950;
-      font-size: 14px;
-      outline:none;
-    }
-
-    .pscore{
-      font-variant-numeric: tabular-nums;
-      font-weight: 1200;
-      font-size: 30px;
-      letter-spacing:.6px;
-      padding: 6px 12px;
-      border-radius: 14px;
-      background: linear-gradient(180deg, rgba(34,230,255,.18), rgba(139,92,255,.12));
-      border: 1px solid rgba(255,255,255,.14);
-      min-width: 86px;
-      text-align:center;
+    .actions{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center; font-size: 12px;
+      padding: 7px 10px; border-radius: 999px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.20);
+      color: var(--muted);
+      white-space: nowrap;
     }
 
     button, .btn{
@@ -122,24 +84,8 @@
     button:active{ transform: translateY(1px); }
     .danger{ border-color: rgba(255,120,120,.35); }
     .ok{ border-color: rgba(44,255,154,.35); }
-    .mini{ padding: 8px 10px; font-size: 18px; border-radius: 12px; background: rgba(0,0,0,.26); }
-    .mini:hover{ background: rgba(255,255,255,.08); }
-    .xbtn{ padding: 7px 9px; font-size: 14px; border-radius: 12px; opacity:.85; }
-    .xbtn:hover{ opacity:1; }
 
-    .actions{
-      display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;
-      min-width: 320px;
-    }
-    .pill{
-      display:inline-flex; gap:8px; align-items:center; font-size: 12px;
-      padding: 7px 10px; border-radius: 999px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.20);
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
+    /* ===== MAIN GAME AREA ===== */
     #main{
       position: absolute;
       top: calc(var(--topH) + 24px);
@@ -160,13 +106,7 @@
     }
     .boardInner{ padding: 14px; flex:1; display:flex; flex-direction:column; }
 
-    .grid{
-      flex:1;
-      display:grid;
-      gap: 12px;
-      align-items:stretch;
-    }
-
+    .grid{ flex:1; display:grid; gap: 12px; align-items:stretch; }
     .cat{
       padding: 14px 14px;
       border-radius: 18px;
@@ -177,7 +117,6 @@
       display:flex; align-items:center;
       box-shadow: inset 0 0 0 1px rgba(139,92,255,.08);
     }
-
     .cell{
       border-radius: 22px;
       background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18));
@@ -210,8 +149,8 @@
       font-size: 12px;
     }
 
-    /* ===== Side chat panel (interactive for everyone) ===== */
-    #sideChat{
+    /* ===== RIGHT PANEL: CLASSIFICA + CAM ===== */
+    #sidePanel{
       position: fixed;
       top: 12px;
       right: 12px;
@@ -228,7 +167,7 @@
       flex-direction:column;
       backdrop-filter: blur(8px);
     }
-    #chatHeader{
+    .panelHeader{
       padding: 12px 12px;
       font-weight: 1100;
       letter-spacing:.6px;
@@ -239,21 +178,79 @@
       justify-content:space-between;
       gap:10px;
     }
-    #chatHeader small{ color: var(--muted); font-weight: 800; letter-spacing:.3px; }
-    #chatFrame{
-      border:0;
-      width:100%;
-      height:100%;
-      background: rgba(0,0,0,.20);
-    }
-    #chatEmpty{
-      padding: 14px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
+    .panelHeader small{ color: var(--muted); font-weight: 800; letter-spacing:.3px; }
 
-    /* ===== Fullscreen Q/A modal ===== */
+    #scoreArea{
+      padding: 12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      overflow:auto;
+      min-height: 0;
+      flex: 1;
+    }
+    .player{
+      display:flex; align-items:center; gap:10px;
+      padding: 10px 10px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: inset 0 0 0 1px rgba(34,230,255,.07);
+    }
+    .pname{
+      flex:1;
+      min-width: 0;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      font-weight: 950;
+      font-size: 14px;
+      outline:none;
+    }
+    .pscore{
+      font-variant-numeric: tabular-nums;
+      font-weight: 1200;
+      font-size: 30px;
+      letter-spacing:.6px;
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(34,230,255,.18), rgba(139,92,255,.12));
+      border: 1px solid rgba(255,255,255,.14);
+      min-width: 92px;
+      text-align:center;
+    }
+    .mini{ padding: 10px 12px; font-size: 18px; border-radius: 12px; background: rgba(0,0,0,.26); }
+    .mini:hover{ background: rgba(255,255,255,.08); }
+    .xbtn{ padding: 8px 10px; font-size: 14px; border-radius: 12px; opacity:.85; }
+    .xbtn:hover{ opacity:1; }
+
+    /* webcam box */
+    #camBox{
+      border-top: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+    }
+    #camLabel{
+      padding: 10px 12px;
+      font-weight: 1100;
+      letter-spacing:.4px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+    }
+    video{
+      width: 100%;
+      height: 210px;
+      object-fit: cover;
+      display:block;
+      background: rgba(0,0,0,.35);
+    }
+    #camBtns{
+      display:flex; gap:8px; padding: 10px;
+    }
+    #camBtns button{ flex:1; }
+
+    /* ===== FULLSCREEN Q/A ===== */
     .modalBackdrop{
       position:fixed; inset:0;
       background: radial-gradient(900px 700px at 20% 0%, rgba(34,230,255,.22), transparent 55%),
@@ -307,7 +304,7 @@
     }
     .notes{ margin-top: 14px; color: var(--muted); font-size: 14px; }
 
-    /* ===== Settings ===== */
+    /* ===== SETTINGS ===== */
     .settingsArea textarea{
       width:100%;
       min-height: 55vh;
@@ -322,24 +319,18 @@
       font-size: 12px; line-height:1.35;
     }
 
-    /* ===== Public lock: blocks everything EXCEPT chat ===== */
+    /* ===== HOST LOCK (blocca TUTTO per il pubblico) ===== */
+    body.locked #topbar,
     body.locked #main,
-    body.locked #playersBar{
+    body.locked #sidePanel{
       pointer-events: none;
     }
-    body.locked #playersBar{
-      opacity: .95;
-    }
-    body.locked #sideChat{
-      pointer-events: auto;
-    }
-
     #lockedBadge{
       display:none;
       position: fixed;
       left: 22px;
       bottom: 18px;
-      z-index: 60;
+      z-index: 200;
       padding: 10px 12px;
       border-radius: 999px;
       background: rgba(0,0,0,.55);
@@ -353,111 +344,120 @@
     body.locked #lockedBadge{ display:block; }
 
     @media (max-width: 1100px){
-      :root{ --sideW: 320px; --topH: 116px; }
+      :root{ --sideW: 320px; --topH: 104px; }
       html,body{ overflow:auto; }
-      #playersBar{ right: 12px; }
+      #topbar{ right: 12px; }
       #main{ right: 12px; }
-      #sideChat{ position: static; width:auto; height: 60vh; margin: 12px; }
+      #sidePanel{ position: static; width:auto; height:auto; margin: 12px; }
+      video{ height: 240px; }
     }
   </style>
 </head>
 
 <body class="locked">
 
-<div id="playersBar">
-  <div class="brand">
-    <div class="t" id="gameTitle">ERM ACTUALLY…</div>
-    <div class="s" id="gameSubtitle">lovely made by yuu</div>
+  <div id="topbar">
+    <div class="brand">
+      <div class="t" id="gameTitle">ERM ACTUALLY…</div>
+      <div class="s" id="gameSubtitle">lovely made by yuu</div>
+    </div>
+
+    <div class="actions">
+      <span class="pill" id="usedCount">0/0 usate</span>
+      <button id="btnAddPlayer" class="ok">+ Giocatore</button>
+      <button id="btnReset" class="danger">Reset</button>
+      <button id="btnSettings">Impostazioni</button>
+      <button id="btnUnlock" class="ok" title="Sblocca con PIN">🔓 PIN</button>
+      <button id="btnLock" class="danger" title="Blocca di nuovo">🔒</button>
+    </div>
   </div>
 
-  <div class="scores" id="scores"></div>
-
-  <div class="actions">
-    <span class="pill" id="usedCount">0/0 usate</span>
-    <button id="btnAddPlayer" class="ok">+ Giocatore</button>
-    <button id="btnReset" class="danger">Reset</button>
-    <button id="btnSettings">Impostazioni</button>
-    <button id="btnUnlock" class="ok" title="Sblocca con PIN">🔓 PIN</button>
-    <button id="btnLock" class="danger" title="Blocca di nuovo">🔒</button>
-  </div>
-</div>
-
-<div id="main">
-  <div class="boardCard">
-    <div class="boardInner">
-      <div id="board" class="grid"></div>
-      <div class="hint">
-        <div>Click su una casella → domanda. “Segna come usata” per farla sparire.</div>
-        <div style="opacity:.85">Esc chiude • Spazio alterna domanda/risposta</div>
+  <div id="main">
+    <div class="boardCard">
+      <div class="boardInner">
+        <div id="board" class="grid"></div>
+        <div class="hint">
+          <div>Click su una casella → domanda. “Segna come usata” per farla sparire.</div>
+          <div style="opacity:.85">Esc chiude • Spazio alterna domanda/risposta</div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div id="sideChat">
-  <div id="chatHeader">
-    <div id="chatTitle">CHAT LIVE</div>
-    <small id="chatHint">interattiva</small>
-  </div>
-  <div id="chatBody" style="flex:1; min-height:0;">
-    <div id="chatEmpty">
-      Incolla l’URL della chat nel <b>config.json</b> (campo <code>chat.url</code>) oppure nelle <b>Impostazioni</b> e premi Salva.<br><br>
-      Esempi: chat embed Twitch / YouTube / Discord widget / qualsiasi pagina embed.
+  <aside id="sidePanel">
+    <div class="panelHeader">
+      <div>CLASSIFICA</div>
+      <small>+ / − = punti domanda aperta</small>
     </div>
-    <iframe id="chatFrame" style="display:none;" allow="camera; microphone; clipboard-read; clipboard-write"></iframe>
-  </div>
-</div>
 
-<div id="lockedBadge">🔒 SOLO PRESENTATORE • Pubblico bloccato</div>
+    <div id="scoreArea"></div>
 
-<div class="modalBackdrop" id="qBackdrop" role="dialog" aria-modal="true">
-  <div class="modal">
-    <div class="mHeader">
-      <div class="mTitle">
-        <div class="small" id="qMeta">—</div>
-        <h2 id="qTitle">—</h2>
-      </div>
-      <div class="mActions">
-        <button id="btnToggleQA">Mostra risposta</button>
-        <button id="btnMarkUsed" class="danger">Segna come usata</button>
-        <button id="btnCloseQ">Chiudi</button>
+    <div id="camBox">
+      <div id="camLabel">Presentatore Yuu</div>
+      <video id="video" playsinline autoplay muted></video>
+      <div id="camBtns">
+        <button id="btnCamOn" class="ok">Accendi</button>
+        <button id="btnCamOff">Spegni</button>
+        <button id="btnCamFlip">Camera</button>
       </div>
     </div>
-    <div class="mBody">
-      <div class="bigBox">
-        <div class="bigText" id="qBigText">—</div>
-        <div class="notes" id="qNotes"></div>
-      </div>
-    </div>
-  </div>
-</div>
+  </aside>
 
-<div class="modalBackdrop" id="sBackdrop" role="dialog" aria-modal="true">
-  <div class="modal">
-    <div class="mHeader">
-      <div class="mTitle">
-        <div class="small">Impostazioni</div>
-        <h2>Modifica e riusa il gioco</h2>
+  <div id="lockedBadge">🔒 SOLO PRESENTATORE • Pubblico bloccato</div>
+
+  <!-- QUESTION MODAL -->
+  <div class="modalBackdrop" id="qBackdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="mHeader">
+        <div class="mTitle">
+          <div class="small" id="qMeta">—</div>
+          <h2 id="qTitle">—</h2>
+        </div>
+        <div class="mActions">
+          <button id="btnToggleQA">Mostra risposta</button>
+          <button id="btnMarkUsed" class="danger">Segna come usata</button>
+          <button id="btnCloseQ">Chiudi</button>
+        </div>
       </div>
-      <div class="mActions">
-        <button id="btnSaveSettings" class="ok">Salva</button>
-        <button id="btnDownloadConfig">Scarica config</button>
-        <label class="btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
-          Carica config <input id="fileConfig" type="file" accept="application/json" style="display:none;">
-        </label>
-        <button id="btnCloseSettings">Chiudi</button>
+      <div class="mBody">
+        <div class="bigBox">
+          <div class="bigText" id="qBigText">—</div>
+          <div class="notes" id="qNotes"></div>
+        </div>
       </div>
-    </div>
-    <div class="mBody settingsArea" style="align-items:stretch; justify-content:flex-start;">
-      <textarea id="settingsJson" spellcheck="false"></textarea>
-      <div class="notes">Suggerimento: modifica categorie, valori, domande, giocatori, chat.url. Salva → aggiorna. Lo stato “usate” resta.</div>
     </div>
   </div>
-</div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modalBackdrop" id="sBackdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="mHeader">
+        <div class="mTitle">
+          <div class="small">Impostazioni</div>
+          <h2>Modifica e riusa il gioco</h2>
+        </div>
+        <div class="mActions">
+          <button id="btnSaveSettings" class="ok">Salva</button>
+          <button id="btnDownloadConfig">Scarica config</button>
+          <label class="btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+            Carica config <input id="fileConfig" type="file" accept="application/json" style="display:none;">
+          </label>
+          <button id="btnCloseSettings">Chiudi</button>
+        </div>
+      </div>
+      <div class="mBody settingsArea" style="align-items:stretch; justify-content:flex-start;">
+        <textarea id="settingsJson" spellcheck="false"></textarea>
+        <div class="notes">Suggerimento: modifica categorie, valori, domande, giocatori. Salva → aggiorna. Lo stato “usate” resta.</div>
+      </div>
+    </div>
+  </div>
 
 <script>
-const STORAGE_KEY = "ermTVChat.state.v1";
-const CONFIG_KEY  = "ermTVChat.config.v1";
+/* ======================
+   CONFIG + STATE
+====================== */
+const STORAGE_KEY = "ermTVcam.state.v1";
+const CONFIG_KEY  = "ermTVcam.config.v1";
 
 let config = null;
 let state  = null;
@@ -474,6 +474,7 @@ function defaultStateFromConfig(cfg){
   return {
     used,
     players: (cfg.scoreboard?.players ?? []).map(p=>({name:p.name, score:p.score ?? 0})),
+    webcam: { deviceId: null, facing: "user" }
   };
 }
 function loadState(){
@@ -496,13 +497,14 @@ async function loadConfig(){
 }
 function mergeStateWithConfig(){
   const fresh = defaultStateFromConfig(config);
-
   for(const k of Object.keys(fresh.used)){
     if(state?.used && k in state.used) fresh.used[k] = !!state.used[k];
   }
   if(Array.isArray(state?.players) && state.players.length){
     fresh.players = state.players.map(p=>({name:p.name ?? "Giocatore", score: Number(p.score)||0}));
   }
+  if(state?.webcam?.deviceId) fresh.webcam.deviceId = state.webcam.deviceId;
+  if(state?.webcam?.facing) fresh.webcam.facing = state.webcam.facing;
   state = fresh;
   saveState();
 }
@@ -518,6 +520,9 @@ function el(tag, attrs={}, text=null){
   return e;
 }
 
+/* ======================
+   BOARD (NO header row 100/200...)
+====================== */
 function renderBoard(){
   const board = $("board");
   board.innerHTML = "";
@@ -527,7 +532,7 @@ function renderBoard(){
     board.appendChild(el("div",{class:"cat"}, cat.name));
     for(const val of config.values){
       const key = `${cat.id}:${val}`;
-      const cell = el("button",{class:"cell","data-key":key, "aria-label": `${cat.name} ${val}`}, String(val));
+      const cell = el("button",{class:"cell","data-key":key}, String(val));
       if(state.used[key]) cell.classList.add("used");
       cell.addEventListener("click", ()=>openQuestion(key));
       board.appendChild(cell);
@@ -535,15 +540,17 @@ function renderBoard(){
   }
   updateUsedCount();
 }
-
 function updateUsedCount(){
   const keys = Object.keys(state.used);
   const used = keys.filter(k=>state.used[k]).length;
   $("usedCount").textContent = `${used}/${keys.length} usate`;
 }
 
+/* ======================
+   SCOREBOARD (A DESTRA)
+====================== */
 function renderScores(){
-  const wrap = $("scores");
+  const wrap = $("scoreArea");
   wrap.innerHTML = "";
   state.players.forEach((p, idx)=>{
     const row = el("div",{class:"player"});
@@ -588,6 +595,9 @@ function addPlayer(){
   renderScores();
 }
 
+/* ======================
+   Q/A FULLSCREEN
+====================== */
 let openQKey = null;
 let showingAnswer = false;
 
@@ -613,7 +623,6 @@ function openQuestion(key){
   $("btnToggleQA").textContent = "Mostra risposta";
   $("qBackdrop").style.display = "flex";
 }
-
 function toggleQA(){
   if(!openQKey) return;
   const q = config.questions?.[openQKey] ?? {prompt:"", answer:"", notes:""};
@@ -629,13 +638,11 @@ function toggleQA(){
     $("btnToggleQA").textContent = "Mostra risposta";
   }
 }
-
 function closeQuestion(){
   $("qBackdrop").style.display = "none";
   openQKey = null;
   showingAnswer = false;
 }
-
 function setUsed(key, used){
   state.used[key] = used;
   saveState();
@@ -644,28 +651,14 @@ function setUsed(key, used){
   updateUsedCount();
 }
 
+/* ======================
+   SETTINGS
+====================== */
 function openSettings(){
   $("settingsJson").value = JSON.stringify(config, null, 2);
   $("sBackdrop").style.display = "flex";
 }
 function closeSettings(){ $("sBackdrop").style.display = "none"; }
-
-function applyChat(){
-  const enabled = !!config.chat?.enabled;
-  $("sideChat").style.display = enabled ? "flex" : "none";
-  $("chatTitle").textContent = config.chat?.title ?? "CHAT LIVE";
-
-  const url = (config.chat?.url || "").trim();
-  if(url){
-    $("chatEmpty").style.display = "none";
-    $("chatFrame").style.display = "block";
-    $("chatFrame").src = url;
-  }else{
-    $("chatFrame").removeAttribute("src");
-    $("chatFrame").style.display = "none";
-    $("chatEmpty").style.display = "block";
-  }
-}
 
 function saveSettingsFromTextarea(){
   try{
@@ -676,8 +669,8 @@ function saveSettingsFromTextarea(){
 
     $("gameTitle").textContent = config.title ?? "ERM ACTUALLY…";
     $("gameSubtitle").textContent = config.subtitle_fixed ?? "lovely made by yuu";
+    $("camLabel").textContent = config.webcam?.label ?? "Presentatore";
 
-    applyChat();
     renderScores();
     renderBoard();
     closeSettings();
@@ -706,8 +699,8 @@ function uploadConfigFile(file){
 
       $("gameTitle").textContent = config.title ?? "ERM ACTUALLY…";
       $("gameSubtitle").textContent = config.subtitle_fixed ?? "lovely made by yuu";
+      $("camLabel").textContent = config.webcam?.label ?? "Presentatore";
 
-      applyChat();
       renderScores();
       renderBoard();
       closeSettings();
@@ -718,18 +711,68 @@ function uploadConfigFile(file){
   reader.readAsText(file, "utf-8");
 }
 
+/* ======================
+   RESET
+====================== */
 function resetUsedOnly(){
   for(const k of Object.keys(state.used)) state.used[k] = false;
   saveState();
   renderBoard();
 }
 
-/* ===== Presenter PIN lock ===== */
-const HOST_UNLOCK_KEY = "ermTVChat.hostUnlocked.v1";
+/* ======================
+   WEBCAM (a destra)
+====================== */
+let stream = null;
+
+async function startCam(){
+  if(!navigator.mediaDevices?.getUserMedia){
+    alert("Browser non supporta webcam.");
+    return;
+  }
+  stopCam();
+
+  const vc = {};
+  if(state.webcam?.deviceId){
+    vc.deviceId = {exact: state.webcam.deviceId};
+  }else{
+    vc.facingMode = state.webcam?.facing || "user";
+  }
+
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({ video: vc, audio: false });
+    const track = stream.getVideoTracks()[0];
+    const settings = track.getSettings?.() || {};
+    if(settings.deviceId){
+      state.webcam.deviceId = settings.deviceId;
+      saveState();
+    }
+    $("video").srcObject = stream;
+  }catch(e){
+    alert("Impossibile avviare webcam: " + e.message);
+  }
+}
+function stopCam(){
+  if(stream){
+    stream.getTracks().forEach(t=>t.stop());
+    stream = null;
+  }
+  $("video").srcObject = null;
+}
+async function flipCam(){
+  state.webcam.deviceId = null;
+  state.webcam.facing = (state.webcam.facing === "user") ? "environment" : "user";
+  saveState();
+  await startCam();
+}
+
+/* ======================
+   PRESENTER PIN LOCK
+====================== */
+const HOST_UNLOCK_KEY = "ermTVcam.hostUnlocked.v1";
 const HOST_PIN = "7391"; // <-- CAMBIA QUI IL PIN
 
 function isUnlocked(){ return localStorage.getItem(HOST_UNLOCK_KEY) === "1"; }
-
 function lockHost(){
   localStorage.removeItem(HOST_UNLOCK_KEY);
   document.body.classList.add("locked");
@@ -746,6 +789,9 @@ function unlockHost(){
   }
 }
 
+/* ======================
+   KEYBOARD
+====================== */
 document.addEventListener("keydown", (e)=>{
   const qOpen = $("qBackdrop").style.display === "flex";
   const sOpen = $("sBackdrop").style.display === "flex";
@@ -763,6 +809,9 @@ document.addEventListener("keydown", (e)=>{
   }
 });
 
+/* ======================
+   WIRE UI
+====================== */
 $("btnAddPlayer").addEventListener("click", addPlayer);
 $("btnReset").addEventListener("click", resetUsedOnly);
 $("btnSettings").addEventListener("click", openSettings);
@@ -780,11 +829,19 @@ $("btnMarkUsed").addEventListener("click", ()=>{ if(openQKey) setUsed(openQKey,t
 $("btnCloseQ").addEventListener("click", closeQuestion);
 $("qBackdrop").addEventListener("click", (e)=>{ if(e.target === $("qBackdrop")) closeQuestion(); });
 
+$("btnCamOn").addEventListener("click", startCam);
+$("btnCamOff").addEventListener("click", stopCam);
+$("btnCamFlip").addEventListener("click", flipCam);
+
+/* ======================
+   INIT
+====================== */
 (async function init(){
   config = await loadConfig();
 
   $("gameTitle").textContent = config.title ?? "ERM ACTUALLY…";
   $("gameSubtitle").textContent = config.subtitle_fixed ?? "lovely made by yuu";
+  $("camLabel").textContent = config.webcam?.label ?? "Presentatore";
 
   state = loadState();
   if(!state){
@@ -796,8 +853,13 @@ $("qBackdrop").addEventListener("click", (e)=>{ if(e.target === $("qBackdrop")) 
 
   renderScores();
   renderBoard();
-  applyChat();
 
+  // default cam on?
+  if(config.webcam?.enabled && config.webcam?.defaultOn){
+    startCam();
+  }
+
+  // lock state
   if(isUnlocked()){
     document.body.classList.remove("locked");
   }else{
