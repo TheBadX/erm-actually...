@@ -431,6 +431,25 @@ video{
 .pscore.bump{
   transform: scale(1.08);
 }
+    .bigBox{
+  position: relative;
+}
+.bigBox::before{
+  content:"";
+  position:absolute; inset:-2px;
+  border-radius: 24px;
+  background: conic-gradient(from 180deg,
+    rgba(34,230,255,.55),
+    rgba(139,92,255,.55),
+    rgba(44,255,154,.50),
+    rgba(34,230,255,.55)
+  );
+  filter: blur(10px);
+  opacity:.35;
+  z-index:-1;
+  animation: spinGlow 6s linear infinite;
+}
+@keyframes spinGlow{ to{ transform: rotate(360deg); } }
   </style>
 </head>
 
