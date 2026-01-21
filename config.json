@@ -3,58 +3,25 @@
   "subtitle_fixed": "lovely made by yuu",
   "currencyLabel": "pt",
   "categories": [
-    {
-      "id": "videogiochi",
-      "name": "VIDEOGIOCHI"
-    },
-    {
-      "id": "storia",
-      "name": "STORIA"
-    },
-    {
-      "id": "serie_tv",
-      "name": "SERIE TV"
-    },
-    {
-      "id": "internet",
-      "name": "INTERNET"
-    },
-    {
-      "id": "sport",
-      "name": "SPORT + ESPORT"
-    }
+    { "id": "videogiochi", "name": "VIDEOGIOCHI" },
+    { "id": "storia", "name": "STORIA" },
+    { "id": "serie_tv", "name": "SERIE TV" },
+    { "id": "internet", "name": "INTERNET" },
+    { "id": "sport", "name": "SPORT + ESPORT" }
   ],
-  "values": [
-    100,
-    200,
-    300,
-    400,
-    500
-  ],
+  "values": [100, 200, 300, 400, 500],
   "questions": {},
   "scoreboard": {
     "players": [
-      {
-        "name": "Yuu",
-        "score": 0
-      },
-      {
-        "name": "Giocatore 2",
-        "score": 0
-      },
-      {
-        "name": "Giocatore 3",
-        "score": 0
-      },
-      {
-        "name": "Giocatore 4",
-        "score": 0
-      }
+      { "name": "Yuu", "score": 0 },
+      { "name": "Giocatore 2", "score": 0 },
+      { "name": "Giocatore 3", "score": 0 },
+      { "name": "Giocatore 4", "score": 0 }
     ]
   },
-  "chat": {
+  "webcam": {
     "enabled": true,
-    "title": "CHAT LIVE",
-    "url": ""
+    "label": "Presentatore Yuu",
+    "defaultOn": false
   }
 }
