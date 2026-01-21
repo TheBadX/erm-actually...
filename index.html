@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ERM ACTUALLY — TV</title>
+  <style>
+    :root{
+      --bg1:#0a0b18;
+      --bg2:#101235;
+      --text:#f3f6ff;
+      --muted: rgba(243,246,255,.70);
+
+      --c1:#22e6ff;
+      --c2:#8b5cff;
+      --c3:#2cff9a;
+
+      --r:18px;
+      --gap:12px;
+
+      --topH: 104px;
+      --sideW: 360px;
+    }
+
+    html,body{
+      height:100%; margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:
+        radial-gradient(1000px 700px at 15% 0%, rgba(34,230,255,.35), transparent 60%),
+        radial-gradient(900px 700px at 85% 0%, rgba(139,92,255,.32), transparent 55%),
+        radial-gradient(900px 800px at 50% 100%, rgba(44,255,154,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg2), var(--bg1));
+      color: var(--text);
+      overflow:hidden;
+    }
+
+    /* ===== TV layout: top bar + side chat ===== */
+    #playersBar{
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      right: calc(var(--sideW) + 12px);
+      height: var(--topH);
+      z-index: 40;
+
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+
+      padding: 10px 12px;
+      border-radius: calc(var(--r) + 6px);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand{
+      display:flex; flex-direction:column; gap:4px;
+      min-width: 260px;
+    }
+    .brand .t{ font-weight: 1100; letter-spacing:.7px; font-size: 18px; }
+    .brand .s{ color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing:.35px; }
+
+    .scores{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      justify-content:center;
+      width: 100%;
+      max-width: 60vw;
+    }
+
+    .player{
+      display:flex; align-items:center; gap:10px;
+      padding: 8px 10px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: inset 0 0 0 1px rgba(34,230,255,.07);
+    }
+
+    .pname{
+      min-width: 90px;
+      max-width: 150px;
+      padding: 6px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      font-weight: 950;
+      font-size: 14px;
+      outline:none;
+    }
+
+    .pscore{
+      font-variant-numeric: tabular-nums;
+      font-weight: 1200;
+      font-size: 30px;
+      letter-spacing:.6px;
+      padding: 6px 12px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(34,230,255,.18), rgba(139,92,255,.12));
+      border: 1px solid rgba(255,255,255,.14);
+      min-width: 86px;
+      text-align:center;
+    }
+
+    button, .btn{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.24);
+      color: var(--text);
+      padding: 9px 11px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 950;
+      font-size: 13px;
+      letter-spacing:.2px;
+      user-select:none;
+    }
+    button:hover{ background: rgba(255,255,255,.08); }
+    button:active{ transform: translateY(1px); }
+    .danger{ border-color: rgba(255,120,120,.35); }
+    .ok{ border-color: rgba(44,255,154,.35); }
+    .mini{ padding: 8px 10px; font-size: 18px; border-radius: 12px; background: rgba(0,0,0,.26); }
+    .mini:hover{ background: rgba(255,255,255,.08); }
+    .xbtn{ padding: 7px 9px; font-size: 14px; border-radius: 12px; opacity:.85; }
+    .xbtn:hover{ opacity:1; }
+
+    .actions{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;
+      min-width: 320px;
+    }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center; font-size: 12px;
+      padding: 7px 10px; border-radius: 999px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.20);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    #main{
+      position: absolute;
+      top: calc(var(--topH) + 24px);
+      left: 12px;
+      right: calc(var(--sideW) + 12px);
+      bottom: 12px;
+      padding: 12px;
+      box-sizing:border-box;
+    }
+    .boardCard{
+      height: 100%;
+      border-radius: calc(var(--r) + 10px);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 18px 70px rgba(0,0,0,.35);
+      overflow:hidden;
+      display:flex; flex-direction:column;
+    }
+    .boardInner{ padding: 14px; flex:1; display:flex; flex-direction:column; }
+
+    .grid{
+      flex:1;
+      display:grid;
+      gap: 12px;
+      align-items:stretch;
+    }
+
+    .cat{
+      padding: 14px 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.10));
+      border: 1px solid rgba(255,255,255,.16);
+      font-weight: 1100;
+      letter-spacing:.7px;
+      display:flex; align-items:center;
+      box-shadow: inset 0 0 0 1px rgba(139,92,255,.08);
+    }
+
+    .cell{
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18));
+      border: 2px solid rgba(34,230,255,.22);
+      text-align:center;
+      font-size: 28px;
+      font-weight: 1200;
+      letter-spacing:.4px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height: 90px;
+      user-select:none;
+      box-shadow: 0 14px 40px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.10);
+    }
+    .cell:hover{ border-color: rgba(44,255,154,.35); transform: translateY(-1px); }
+    .cell.used{
+      opacity:.22;
+      filter: grayscale(.15);
+      text-decoration: line-through;
+      border-color: rgba(255,255,255,.10);
+      box-shadow: none;
+      transform:none;
+    }
+
+    .hint{
+      margin-top: 10px;
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* ===== Side chat panel (interactive for everyone) ===== */
+    #sideChat{
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      width: var(--sideW);
+      bottom: 12px;
+      z-index: 30;
+
+      border-radius: calc(var(--r) + 10px);
+      background: linear-gradient(180deg, rgba(0,0,0,.38), rgba(0,0,0,.22));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 18px 70px rgba(0,0,0,.35);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      backdrop-filter: blur(8px);
+    }
+    #chatHeader{
+      padding: 12px 12px;
+      font-weight: 1100;
+      letter-spacing:.6px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    #chatHeader small{ color: var(--muted); font-weight: 800; letter-spacing:.3px; }
+    #chatFrame{
+      border:0;
+      width:100%;
+      height:100%;
+      background: rgba(0,0,0,.20);
+    }
+    #chatEmpty{
+      padding: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    /* ===== Fullscreen Q/A modal ===== */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background: radial-gradient(900px 700px at 20% 0%, rgba(34,230,255,.22), transparent 55%),
+                  radial-gradient(900px 700px at 80% 0%, rgba(139,92,255,.22), transparent 55%),
+                  rgba(0,0,0,.78);
+      display:none; align-items:center; justify-content:center;
+      z-index: 100;
+    }
+    .modal{
+      width: 98vw;
+      height: 96vh;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 30px 120px rgba(0,0,0,.55);
+      overflow:hidden;
+      display:flex; flex-direction:column;
+      backdrop-filter: blur(10px);
+    }
+    .mHeader{
+      padding: 14px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      border-bottom: 1px solid rgba(255,255,255,.14);
+    }
+    .mTitle{ display:flex; flex-direction:column; gap:4px; }
+    .mTitle .small{ color: var(--muted); font-size: 12px; font-weight:950; letter-spacing:.35px;}
+    .mTitle h2{ margin:0; font-size: 22px; letter-spacing:.3px; }
+    .mActions{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .mBody{
+      flex:1;
+      padding: 16px;
+      overflow:auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .bigBox{
+      width: min(1300px, 96vw);
+      padding: 28px 28px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18));
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: inset 0 0 0 1px rgba(34,230,255,.10);
+    }
+    .bigText{
+      white-space: pre-wrap;
+      font-size: clamp(28px, 2.4vw, 44px);
+      line-height: 1.35;
+      font-weight: 1000;
+      letter-spacing:.2px;
+    }
+    .notes{ margin-top: 14px; color: var(--muted); font-size: 14px; }
+
+    /* ===== Settings ===== */
+    .settingsArea textarea{
+      width:100%;
+      min-height: 55vh;
+      box-sizing:border-box;
+      resize: vertical;
+      background: rgba(0,0,0,.30);
+      border:1px solid rgba(255,255,255,.18);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px; line-height:1.35;
+    }
+
+    /* ===== Public lock: blocks everything EXCEPT chat ===== */
+    body.locked #main,
+    body.locked #playersBar{
+      pointer-events: none;
+    }
+    body.locked #playersBar{
+      opacity: .95;
+    }
+    body.locked #sideChat{
+      pointer-events: auto;
+    }
+
+    #lockedBadge{
+      display:none;
+      position: fixed;
+      left: 22px;
+      bottom: 18px;
+      z-index: 60;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.18);
+      color: rgba(243,246,255,.85);
+      font-weight: 950;
+      letter-spacing: .4px;
+      font-size: 12px;
+      backdrop-filter: blur(6px);
+    }
+    body.locked #lockedBadge{ display:block; }
+
+    @media (max-width: 1100px){
+      :root{ --sideW: 320px; --topH: 116px; }
+      html,body{ overflow:auto; }
+      #playersBar{ right: 12px; }
+      #main{ right: 12px; }
+      #sideChat{ position: static; width:auto; height: 60vh; margin: 12px; }
+    }
+  </style>
+</head>
+
+<body class="locked">
+
+<div id="playersBar">
+  <div class="brand">
+    <div class="t" id="gameTitle">ERM ACTUALLY…</div>
+    <div class="s" id="gameSubtitle">lovely made by yuu</div>
+  </div>
+
+  <div class="scores" id="scores"></div>
+
+  <div class="actions">
+    <span class="pill" id="usedCount">0/0 usate</span>
+    <button id="btnAddPlayer" class="ok">+ Giocatore</button>
+    <button id="btnReset" class="danger">Reset</button>
+    <button id="btnSettings">Impostazioni</button>
+    <button id="btnUnlock" class="ok" title="Sblocca con PIN">🔓 PIN</button>
+    <button id="btnLock" class="danger" title="Blocca di nuovo">🔒</button>
+  </div>
+</div>
+
+<div id="main">
+  <div class="boardCard">
+    <div class="boardInner">
+      <div id="board" class="grid"></div>
+      <div class="hint">
+        <div>Click su una casella → domanda. “Segna come usata” per farla sparire.</div>
+        <div style="opacity:.85">Esc chiude • Spazio alterna domanda/risposta</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="sideChat">
+  <div id="chatHeader">
+    <div id="chatTitle">CHAT LIVE</div>
+    <small id="chatHint">interattiva</small>
+  </div>
+  <div id="chatBody" style="flex:1; min-height:0;">
+    <div id="chatEmpty">
+      Incolla l’URL della chat nel <b>config.json</b> (campo <code>chat.url</code>) oppure nelle <b>Impostazioni</b> e premi Salva.<br><br>
+      Esempi: chat embed Twitch / YouTube / Discord widget / qualsiasi pagina embed.
+    </div>
+    <iframe id="chatFrame" style="display:none;" allow="camera; microphone; clipboard-read; clipboard-write"></iframe>
+  </div>
+</div>
+
+<div id="lockedBadge">🔒 SOLO PRESENTATORE • Pubblico bloccato</div>
+
+<div class="modalBackdrop" id="qBackdrop" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="mHeader">
+      <div class="mTitle">
+        <div class="small" id="qMeta">—</div>
+        <h2 id="qTitle">—</h2>
+      </div>
+      <div class="mActions">
+        <button id="btnToggleQA">Mostra risposta</button>
+        <button id="btnMarkUsed" class="danger">Segna come usata</button>
+        <button id="btnCloseQ">Chiudi</button>
+      </div>
+    </div>
+    <div class="mBody">
+      <div class="bigBox">
+        <div class="bigText" id="qBigText">—</div>
+        <div class="notes" id="qNotes"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="sBackdrop" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="mHeader">
+      <div class="mTitle">
+        <div class="small">Impostazioni</div>
+        <h2>Modifica e riusa il gioco</h2>
+      </div>
+      <div class="mActions">
+        <button id="btnSaveSettings" class="ok">Salva</button>
+        <button id="btnDownloadConfig">Scarica config</button>
+        <label class="btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+          Carica config <input id="fileConfig" type="file" accept="application/json" style="display:none;">
+        </label>
+        <button id="btnCloseSettings">Chiudi</button>
+      </div>
+    </div>
+    <div class="mBody settingsArea" style="align-items:stretch; justify-content:flex-start;">
+      <textarea id="settingsJson" spellcheck="false"></textarea>
+      <div class="notes">Suggerimento: modifica categorie, valori, domande, giocatori, chat.url. Salva → aggiorna. Lo stato “usate” resta.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "ermTVChat.state.v1";
+const CONFIG_KEY  = "ermTVChat.config.v1";
+
+let config = null;
+let state  = null;
+
+const $ = (id)=>document.getElementById(id);
+
+function defaultStateFromConfig(cfg){
+  const used = {};
+  for(const cat of cfg.categories){
+    for(const val of cfg.values){
+      used[`${cat.id}:${val}`] = false;
+    }
+  }
+  return {
+    used,
+    players: (cfg.scoreboard?.players ?? []).map(p=>({name:p.name, score:p.score ?? 0})),
+  };
+}
+function loadState(){
+  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function loadConfigFromStorage(){
+  try{ const raw = localStorage.getItem(CONFIG_KEY); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+function saveConfigToStorage(cfg){ localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg)); }
+
+async function loadConfig(){
+  const stored = loadConfigFromStorage();
+  if(stored) return stored;
+  const res = await fetch("./config.json", {cache:"no-store"});
+  return await res.json();
+}
+function mergeStateWithConfig(){
+  const fresh = defaultStateFromConfig(config);
+
+  for(const k of Object.keys(fresh.used)){
+    if(state?.used && k in state.used) fresh.used[k] = !!state.used[k];
+  }
+  if(Array.isArray(state?.players) && state.players.length){
+    fresh.players = state.players.map(p=>({name:p.name ?? "Giocatore", score: Number(p.score)||0}));
+  }
+  state = fresh;
+  saveState();
+}
+
+function el(tag, attrs={}, text=null){
+  const e = document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs)){
+    if(k==="class") e.className = v;
+    else if(k==="style") e.setAttribute("style", v);
+    else e.setAttribute(k, v);
+  }
+  if(text!==null) e.textContent = text;
+  return e;
+}
+
+function renderBoard(){
+  const board = $("board");
+  board.innerHTML = "";
+  board.style.gridTemplateColumns = `1.2fr repeat(${config.values.length}, 1fr)`;
+
+  for(const cat of config.categories){
+    board.appendChild(el("div",{class:"cat"}, cat.name));
+    for(const val of config.values){
+      const key = `${cat.id}:${val}`;
+      const cell = el("button",{class:"cell","data-key":key, "aria-label": `${cat.name} ${val}`}, String(val));
+      if(state.used[key]) cell.classList.add("used");
+      cell.addEventListener("click", ()=>openQuestion(key));
+      board.appendChild(cell);
+    }
+  }
+  updateUsedCount();
+}
+
+function updateUsedCount(){
+  const keys = Object.keys(state.used);
+  const used = keys.filter(k=>state.used[k]).length;
+  $("usedCount").textContent = `${used}/${keys.length} usate`;
+}
+
+function renderScores(){
+  const wrap = $("scores");
+  wrap.innerHTML = "";
+  state.players.forEach((p, idx)=>{
+    const row = el("div",{class:"player"});
+
+    const name = el("input",{class:"pname", value: p.name});
+    name.addEventListener("input", ()=>{
+      state.players[idx].name = name.value;
+      saveState();
+    });
+
+    const minus = el("button",{class:"mini"}, "−");
+    const plus  = el("button",{class:"mini"}, "+");
+    const score = el("div",{class:"pscore"}, String(p.score));
+
+    const delta = ()=> currentQuestionValue() ?? 100;
+    minus.addEventListener("click", ()=>applyDelta(idx, -delta(), score));
+    plus.addEventListener("click", ()=>applyDelta(idx, +delta(), score));
+
+    const remove = el("button",{class:"xbtn danger", title:"Rimuovi giocatore"}, "✕");
+    remove.addEventListener("click", ()=>{
+      if(confirm(`Rimuovere ${state.players[idx].name || "giocatore"}?`)){
+        state.players.splice(idx,1);
+        saveState();
+        renderScores();
+      }
+    });
+
+    row.append(name, minus, score, plus, remove);
+    wrap.appendChild(row);
+  });
+}
+function applyDelta(idx, d, scoreEl){
+  state.players[idx].score = (Number(state.players[idx].score)||0) + d;
+  scoreEl.textContent = String(state.players[idx].score);
+  saveState();
+}
+function addPlayer(){
+  const name = prompt("Nome giocatore:", `Giocatore ${state.players.length+1}`);
+  if(!name) return;
+  state.players.push({name, score:0});
+  saveState();
+  renderScores();
+}
+
+let openQKey = null;
+let showingAnswer = false;
+
+function currentQuestionValue(){
+  if(!openQKey) return null;
+  const v = Number(openQKey.split(":")[1]||0);
+  return Number.isFinite(v) ? v : null;
+}
+
+function openQuestion(key){
+  openQKey = key;
+  showingAnswer = false;
+
+  const [catId, val] = key.split(":");
+  const cat = config.categories.find(c=>c.id===catId);
+  const q = config.questions?.[key] ?? {prompt:"(incolla qui la domanda)", answer:"(incolla qui la risposta)", notes:""};
+
+  $("qMeta").textContent = `${cat?.name ?? catId} • ${val}${config.currencyLabel ? " "+config.currencyLabel : ""}`;
+  $("qTitle").textContent = "Domanda";
+  $("qBigText").textContent = (q.prompt && q.prompt.trim()) ? q.prompt : "(vuoto)";
+  $("qNotes").textContent = (q.notes && q.notes.trim()) ? q.notes : "";
+
+  $("btnToggleQA").textContent = "Mostra risposta";
+  $("qBackdrop").style.display = "flex";
+}
+
+function toggleQA(){
+  if(!openQKey) return;
+  const q = config.questions?.[openQKey] ?? {prompt:"", answer:"", notes:""};
+  showingAnswer = !showingAnswer;
+
+  if(showingAnswer){
+    $("qTitle").textContent = "Risposta";
+    $("qBigText").textContent = (q.answer && q.answer.trim()) ? q.answer : "(vuoto)";
+    $("btnToggleQA").textContent = "Mostra domanda";
+  }else{
+    $("qTitle").textContent = "Domanda";
+    $("qBigText").textContent = (q.prompt && q.prompt.trim()) ? q.prompt : "(vuoto)";
+    $("btnToggleQA").textContent = "Mostra risposta";
+  }
+}
+
+function closeQuestion(){
+  $("qBackdrop").style.display = "none";
+  openQKey = null;
+  showingAnswer = false;
+}
+
+function setUsed(key, used){
+  state.used[key] = used;
+  saveState();
+  const btn = document.querySelector(`.cell[data-key="${CSS.escape(key)}"]`);
+  if(btn) btn.classList.toggle("used", used);
+  updateUsedCount();
+}
+
+function openSettings(){
+  $("settingsJson").value = JSON.stringify(config, null, 2);
+  $("sBackdrop").style.display = "flex";
+}
+function closeSettings(){ $("sBackdrop").style.display = "none"; }
+
+function applyChat(){
+  const enabled = !!config.chat?.enabled;
+  $("sideChat").style.display = enabled ? "flex" : "none";
+  $("chatTitle").textContent = config.chat?.title ?? "CHAT LIVE";
+
+  const url = (config.chat?.url || "").trim();
+  if(url){
+    $("chatEmpty").style.display = "none";
+    $("chatFrame").style.display = "block";
+    $("chatFrame").src = url;
+  }else{
+    $("chatFrame").removeAttribute("src");
+    $("chatFrame").style.display = "none";
+    $("chatEmpty").style.display = "block";
+  }
+}
+
+function saveSettingsFromTextarea(){
+  try{
+    const next = JSON.parse($("settingsJson").value);
+    config = next;
+    saveConfigToStorage(config);
+    mergeStateWithConfig();
+
+    $("gameTitle").textContent = config.title ?? "ERM ACTUALLY…";
+    $("gameSubtitle").textContent = config.subtitle_fixed ?? "lovely made by yuu";
+
+    applyChat();
+    renderScores();
+    renderBoard();
+    closeSettings();
+  }catch(e){
+    alert("JSON non valido: " + e.message);
+  }
+}
+
+function downloadConfig(){
+  const blob = new Blob([JSON.stringify(config, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "config.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function uploadConfigFile(file){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const next = JSON.parse(String(reader.result));
+      config = next;
+      saveConfigToStorage(config);
+      mergeStateWithConfig();
+
+      $("gameTitle").textContent = config.title ?? "ERM ACTUALLY…";
+      $("gameSubtitle").textContent = config.subtitle_fixed ?? "lovely made by yuu";
+
+      applyChat();
+      renderScores();
+      renderBoard();
+      closeSettings();
+    }catch(e){
+      alert("File JSON non valido: " + e.message);
+    }
+  };
+  reader.readAsText(file, "utf-8");
+}
+
+function resetUsedOnly(){
+  for(const k of Object.keys(state.used)) state.used[k] = false;
+  saveState();
+  renderBoard();
+}
+
+/* ===== Presenter PIN lock ===== */
+const HOST_UNLOCK_KEY = "ermTVChat.hostUnlocked.v1";
+const HOST_PIN = "7391"; // <-- CAMBIA QUI IL PIN
+
+function isUnlocked(){ return localStorage.getItem(HOST_UNLOCK_KEY) === "1"; }
+
+function lockHost(){
+  localStorage.removeItem(HOST_UNLOCK_KEY);
+  document.body.classList.add("locked");
+}
+function unlockHost(){
+  const pin = prompt("PIN presentatore:");
+  if(pin === null) return;
+  if(pin === HOST_PIN){
+    localStorage.setItem(HOST_UNLOCK_KEY, "1");
+    document.body.classList.remove("locked");
+    alert("Sbloccato ✅");
+  }else{
+    alert("PIN errato ❌");
+  }
+}
+
+document.addEventListener("keydown", (e)=>{
+  const qOpen = $("qBackdrop").style.display === "flex";
+  const sOpen = $("sBackdrop").style.display === "flex";
+
+  if(e.key === "Escape"){
+    if(qOpen) closeQuestion();
+    if(sOpen) closeSettings();
+  }
+  if(qOpen && e.code === "Space"){
+    e.preventDefault();
+    toggleQA();
+  }
+  if(e.ctrlKey && e.altKey && e.key.toLowerCase()==="p"){
+    unlockHost();
+  }
+});
+
+$("btnAddPlayer").addEventListener("click", addPlayer);
+$("btnReset").addEventListener("click", resetUsedOnly);
+$("btnSettings").addEventListener("click", openSettings);
+
+$("btnUnlock").addEventListener("click", unlockHost);
+$("btnLock").addEventListener("click", lockHost);
+
+$("btnCloseSettings").addEventListener("click", closeSettings);
+$("btnSaveSettings").addEventListener("click", saveSettingsFromTextarea);
+$("btnDownloadConfig").addEventListener("click", downloadConfig);
+$("fileConfig").addEventListener("change", (e)=>{ const f=e.target.files?.[0]; if(f) uploadConfigFile(f); e.target.value=""; });
+
+$("btnToggleQA").addEventListener("click", toggleQA);
+$("btnMarkUsed").addEventListener("click", ()=>{ if(openQKey) setUsed(openQKey,true); });
+$("btnCloseQ").addEventListener("click", closeQuestion);
+$("qBackdrop").addEventListener("click", (e)=>{ if(e.target === $("qBackdrop")) closeQuestion(); });
+
+(async function init(){
+  config = await loadConfig();
+
+  $("gameTitle").textContent = config.title ?? "ERM ACTUALLY…";
+  $("gameSubtitle").textContent = config.subtitle_fixed ?? "lovely made by yuu";
+
+  state = loadState();
+  if(!state){
+    state = defaultStateFromConfig(config);
+    saveState();
+  }else{
+    mergeStateWithConfig();
+  }
+
+  renderScores();
+  renderBoard();
+  applyChat();
+
+  if(isUnlocked()){
+    document.body.classList.remove("locked");
+  }else{
+    document.body.classList.add("locked");
+  }
+})();
+</script>
+</body>
+</html>
