@@ -5,6 +5,34 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ERM ACTUALLY — TV</title>
   <style>
+    #camBox{
+  box-shadow: inset 0 0 0 1px rgba(34,230,255,.10);
+}
+video{
+  border-radius: 0 0 16px 16px;
+}
+#camLabel{
+  display:flex; align-items:center; justify-content:space-between;
+}
+#camLabel::after{
+  content:"● LIVE";
+  font-weight:1100;
+  color: rgba(44,255,154,.95);
+  letter-spacing:.4px;
+}
+    body::after{
+  content:"";
+  position:fixed; inset:0;
+  background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 46px 46px;
+  opacity:.25;
+  pointer-events:none;
+  animation: drift 18s linear infinite;
+}
+@keyframes drift{
+  from{ transform: translate3d(0,0,0); }
+  to{ transform: translate3d(-60px, 40px, 0); }
+}
     .modalBackdrop{ animation: fadeIn .18s ease-out; }
 @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
 
