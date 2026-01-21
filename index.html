@@ -665,6 +665,10 @@ function renderScores(){
 function applyDelta(idx, d, scoreEl){
   state.players[idx].score = (Number(state.players[idx].score)||0) + d;
   scoreEl.textContent = String(state.players[idx].score);
+  scoreEl.classList.remove("bump");
+void scoreEl.offsetWidth; // forza il reflow
+scoreEl.classList.add("bump");
+setTimeout(() => scoreEl.classList.remove("bump"), 120);
   saveState();
 }
 function addPlayer(){
