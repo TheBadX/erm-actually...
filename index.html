@@ -133,14 +133,42 @@
       box-shadow: 0 14px 40px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.10);
     }
     .cell:hover{ border-color: rgba(44,255,154,.35); transform: translateY(-1px); }
-    .cell.used{
-      opacity:.22;
-      filter: grayscale(.15);
-      text-decoration: line-through;
-      border-color: rgba(255,255,255,.10);
-      box-shadow: none;
-      transform:none;
-    }
+.cell.used{
+  opacity:.18;
+  border-color: rgba(255,255,255,.08);
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.22));
+  box-shadow:none;
+  transform:none;
+  text-decoration: none;
+  position: relative;
+}
+.cell.used::after{
+  content:"";
+  position:absolute; left:14px; right:14px; top:50%;
+  height: 3px;
+  background: rgba(255,255,255,.20);
+  border-radius: 999px;
+  transform: translateY(-50%) rotate(-4deg);
+}
+    .cell{
+  position: relative;
+  overflow: hidden;
+}
+.cell::before{
+  content:"";
+  position:absolute; inset:-2px;
+  background: radial-gradient(circle at 30% 20%, rgba(34,230,255,.35), transparent 55%),
+              radial-gradient(circle at 70% 80%, rgba(139,92,255,.30), transparent 60%);
+  opacity:.0;
+  transition: opacity .25s ease;
+}
+.cell:hover::before{ opacity:1; }
+
+@keyframes neonPulse{
+  0%,100%{ box-shadow: 0 14px 40px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.10); }
+  50%{ box-shadow: 0 18px 55px rgba(34,230,255,.10), 0 18px 55px rgba(139,92,255,.08), inset 0 0 0 1px rgba(255,255,255,.14); }
+}
+.cell{ animation: neonPulse 2.8s ease-in-out infinite; }
 
     .hint{
       margin-top: 10px;
