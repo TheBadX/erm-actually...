@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ERM ACTUALLY — TV</title>
   <style>
+    .modalBackdrop{ animation: fadeIn .18s ease-out; }
+@keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+
+.modal{
+  transform: scale(.985);
+  animation: popIn .18s ease-out forwards;
+}
+@keyframes popIn{
+  to{ transform: scale(1) }
+}
     :root{
       --bg1:#0a0b18;
       --bg2:#101235;
