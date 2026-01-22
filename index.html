@@ -451,30 +451,27 @@ video{
 }
 @keyframes spinGlow{ to{ transform: rotate(360deg); } }
  /* Nome giocatore: scorre solo se troppo lungo */
-.player .pname{
-  overflow: hidden;
-  white-space: nowrap;
-  position: relative;
+/* Animazione spostamento righe (FLIP) */
+.player{
+  transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+  will-change: transform;
 }
 
-.player .pname span{
-  display: inline-block;
-  padding-right: 30px;
+/* Piccolo pop del punteggio */
+.pscore.bump{
+  animation: scoreBump 220ms ease;
 }
 
-.player .pname.marquee span{
-  animation: pnameScroll 7s linear infinite;
+@keyframes scoreBump{
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
 }
-
-@keyframes pnameScroll{
-  0% { transform: translateX(0); }
-  50% { transform: translateX(-100%); }
-  100% { transform: translateX(0); }
-}   
     /* === Podio: oro / argento / bronzo === */
 .player.rank-1{ border-color: gold; box-shadow: 0 0 10px rgba(255,215,0,.6); }
 .player.rank-2{ border-color: silver; box-shadow: 0 0 10px rgba(192,192,192,.6); }
 .player.rank-3{ border-color: #cd7f32; box-shadow: 0 0 10px rgba(205,127,50,.6); }
+    
   </style>
 </head>
 
@@ -676,46 +673,125 @@ function updateUsedCount(){
 function renderScores(){
   const wrap = $("scoreArea");
   wrap.innerHTML = "";
-  state.players.forEach((p, idx)=>{
-    const row = el("div",{class:"player"});
-row.classList.remove("rank-1","rank-2","rank-3");
-if(idx === 0) row.classList.add("rank-1");
-if(idx === 1) row.classList.add("rank-2");
-if(idx === 2) row.classList.add("rank-3");
-    const name = el("input",{class:"pname", value: p.name});
-    // se il nome è troppo lungo, attiva scorrimento
-setTimeout(()=>{
-  if(name.scrollWidth > name.clientWidth){
-    name.classList.add("marquee");
-  } else {
-    name.classList.remove("marquee");
-  }
-}, 0);
-    name.addEventListener("input", ()=>{
+
+  // Ordina per punteggio (decrescente) MA mantiene l'indice originale (idx) per modificare state.players
+  const order = state.players
+    .map((p, idx) => ({ p, idx }))
+    .sort((a, b) => (Number(b.p.score) || 0) - (Number(a.p.score) || 0));
+
+  order.forEach(({ p, idx }, rank) => {
+    const row = el("div", { class: "player" });
+
+    // Podio in base alla posizione in classifica (rank)
+    row.classList.remove("rank-1", "rank-2", "rank-3");
+    if (rank === 0) row.classList.add("rank-1");
+    if (rank === 1) row.classList.add("rank-2");
+    if (rank === 2) row.classList.add("rank-3");
+
+    // Nome giocatore (INPUT)
+    const name = el("input", { class: "pname", value: p.name });
+
+    // Salva nome + riattiva marquee (scroll dentro input)
+    name.addEventListener("input", () => {
       state.players[idx].name = name.value;
       saveState();
+      startNameScroll(name);
     });
 
-    const minus = el("button",{class:"mini"}, "−");
-    const plus  = el("button",{class:"mini"}, "+");
-    const score = el("div",{class:"pscore"}, String(p.score));
+    // avvia marquee dopo che l'input è in pagina
+    setTimeout(() => {
+      startNameScroll(name);
+    }, 0);
 
-    const delta = ()=> currentQuestionValue() ?? 100;
-    minus.addEventListener("click", ()=>applyDelta(idx, -delta(), score));
-    plus.addEventListener("click", ()=>applyDelta(idx, +delta(), score));
+    // Punteggio +/- (delta = valore domanda corrente oppure 100)
+    const minus = el("button", { class: "mini" }, "−");
+    const plus  = el("button", { class: "mini" }, "+");
+    const score = el("div", { class: "pscore" }, String(p.score));
 
-    const remove = el("button",{class:"xbtn danger", title:"Rimuovi giocatore"}, "✕");
-    remove.addEventListener("click", ()=>{
-      if(confirm(`Rimuovere ${state.players[idx].name || "giocatore"}?`)){
-        state.players.splice(idx,1);
+    const delta = () => currentQuestionValue() ?? 100;
+
+    minus.addEventListener("click", () => {
+      applyDelta(idx, -delta(), score);
+      // riordina e ri-renderizza (così "si muovono")
+      renderScores();
+    });
+
+    plus.addEventListener("click", () => {
+      applyDelta(idx, +delta(), score);
+      renderScores();
+    });
+
+    // Rimuovi giocatore (se nel tuo codice esiste già questa parte puoi tenerla)
+    const remove = el("button", { class: "xbtn danger", title: "Rimuovi giocatore" }, "✕");
+    remove.addEventListener("click", () => {
+      if (confirm(`Rimuovere ${state.players[idx].name || "giocatore"}?`)) {
+        state.players.splice(idx, 1);
         saveState();
         renderScores();
       }
     });
 
-    row.append(name, minus, score, plus, remove);
+    // Montaggio riga
+    row.appendChild(name);
+    row.appendChild(minus);
+    row.appendChild(score);
+    row.appendChild(plus);
+    row.appendChild(remove);
+
     wrap.appendChild(row);
   });
+}
+
+// Scorrimento testo DENTRO input (marquee reale per <input>)
+function startNameScroll(input){
+  if (!input) return;
+
+  // stop timer precedente se renderScores ricrea la riga
+  if (input._marqTimer){
+    clearInterval(input._marqTimer);
+    input._marqTimer = null;
+  }
+
+  input.scrollLeft = 0;
+
+  const max = input.scrollWidth - input.clientWidth;
+  if (max <= 8) return; // non serve scorrere
+
+  let dir = 1;
+  input._marqTimer = setInterval(() => {
+    const m = input.scrollWidth - input.clientWidth;
+    if (m <= 8){ input.scrollLeft = 0; return; }
+
+    input.scrollLeft += dir * 1; // velocità (1 = lento)
+    if (input.scrollLeft >= m) dir = -1;
+    if (input.scrollLeft <= 0) dir = 1;
+  }, 25);
+}
+
+// Scorrimento testo DENTRO input (marquee reale per <input>)
+function startNameScroll(input){
+  if (!input) return;
+
+  // stop timer precedente se renderScores ricrea la riga
+  if (input._marqTimer){
+    clearInterval(input._marqTimer);
+    input._marqTimer = null;
+  }
+
+  input.scrollLeft = 0;
+
+  const max = input.scrollWidth - input.clientWidth;
+  if (max <= 8) return; // non serve scorrere
+
+  let dir = 1;
+  input._marqTimer = setInterval(() => {
+    const m = input.scrollWidth - input.clientWidth;
+    if (m <= 8){ input.scrollLeft = 0; return; }
+
+    input.scrollLeft += dir * 1; // velocità (1 = lento)
+    if (input.scrollLeft >= m) dir = -1;
+    if (input.scrollLeft <= 0) dir = 1;
+  }, 25);
 }
 function applyDelta(idx, d, scoreEl){
   state.players[idx].score = (Number(state.players[idx].score)||0) + d;
