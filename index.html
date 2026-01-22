@@ -672,6 +672,11 @@ function updateUsedCount(){
 ====================== */
 function renderScores(){
   const wrap = $("scoreArea");
+  // FLIP - salva posizioni iniziali
+const first = new Map();
+wrap.querySelectorAll(".player").forEach(elm => {
+  first.set(elm.dataset.pid, elm.getBoundingClientRect());
+});
   wrap.innerHTML = "";
 
   // Ordina per punteggio (decrescente) MA mantiene l'indice originale (idx) per modificare state.players
@@ -681,6 +686,7 @@ function renderScores(){
 
   order.forEach(({ p, idx }, rank) => {
     const row = el("div", { class: "player" });
+    row.dataset.pid = String(idx);
 
     // Podio in base alla posizione in classifica (rank)
     row.classList.remove("rank-1", "rank-2", "rank-3");
@@ -740,6 +746,30 @@ function renderScores(){
 
     wrap.appendChild(row);
   });
+  // FLIP - anima lo spostamento
+requestAnimationFrame(() => {
+  wrap.querySelectorAll(".player").forEach(elm => {
+    const last = elm.getBoundingClientRect();
+    const prev = first.get(elm.dataset.pid);
+    if (!prev) return;
+
+    const dx = prev.left - last.left;
+    const dy = prev.top - last.top;
+
+    if (dx || dy) {
+      elm.animate(
+        [
+          { transform: `translate(${dx}px, ${dy}px)` },
+          { transform: "translate(0,0)" }
+        ],
+        {
+          duration: 260,
+          easing: "cubic-bezier(.2,.8,.2,1)"
+        }
+      );
+    }
+  });
+});
 }
 
 // Scorrimento testo DENTRO input (marquee reale per <input>)
