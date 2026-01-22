@@ -450,51 +450,27 @@ video{
   animation: spinGlow 6s linear infinite;
 }
 @keyframes spinGlow{ to{ transform: rotate(360deg); } }
-    /* === NOME SCORRE SE TROPPO LUNGO (solo quando serve) === */
-
-
-.player{ transition: transform 220ms ease; }
-
-.pnameWrap{
-  flex: 1;
-  min-width: 0;
+ /* Nome giocatore: scorre solo se troppo lungo */
+.player .pname{
   overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.18);
-  padding: 8px 10px;
-  cursor: pointer;
-}
-
-.pnameText{
-  display: inline-block;
   white-space: nowrap;
-  font-weight: 950;
-  font-size: 14px;
-  color: var(--text);
-  transform: translateX(0);
+  position: relative;
 }
 
-.pnameText.marquee{
-  will-change: transform;
-  animation: nameMarquee 7s linear infinite;
+.player .pname span{
+  display: inline-block;
+  padding-right: 30px;
 }
 
-@keyframes nameMarquee{
-  0%   { transform: translateX(0); }
-  45%  { transform: translateX(calc(-100% + var(--wrapW))); }
-  55%  { transform: translateX(calc(-100% + var(--wrapW))); }
+.player .pname.marquee span{
+  animation: pnameScroll 7s linear infinite;
+}
+
+@keyframes pnameScroll{
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-100%); }
   100% { transform: translateX(0); }
-}
-
-/* Podio */
-.player.rank-1{ box-shadow: inset 0 0 0 1px rgba(255,215,0,.30); border-color: rgba(255,215,0,.28); }
-.player.rank-2{ box-shadow: inset 0 0 0 1px rgba(192,192,192,.28); border-color: rgba(192,192,192,.24); }
-.player.rank-3{ box-shadow: inset 0 0 0 1px rgba(205,127,50,.28); border-color: rgba(205,127,50,.24); }
-
-.player.rank-1 .pscore{ background: linear-gradient(180deg, rgba(255,215,0,.22), rgba(0,0,0,.18)); }
-.player.rank-2 .pscore{ background: linear-gradient(180deg, rgba(192,192,192,.18), rgba(0,0,0,.18)); }
-.player.rank-3 .pscore{ background: linear-gradient(180deg, rgba(205,127,50,.20), rgba(0,0,0,.18)); }
+}   
   </style>
 </head>
 
@@ -694,44 +670,26 @@ function updateUsedCount(){
    SCOREBOARD (A DESTRA)
 ====================== */
 function renderScores(){
-  const wrap = $("scores");
-
-  // salva posizioni "prima" per animare lo spostamento
-  const first = new Map();
-  wrap.querySelectorAll(".player").forEach(el=>{
-    first.set(el.dataset.pid, el.getBoundingClientRect());
-  });
-
+  const wrap = $("scoreArea");
   wrap.innerHTML = "";
-
-  // ordina per punteggio (desc)
-  const ordered = state.players
-    .map((p, originalIndex)=>({ p, originalIndex }))
-    .sort((a,b)=> (Number(b.p.score)||0) - (Number(a.p.score)||0));
-
-  ordered.forEach((item, rankIdx)=>{
-    const idx = item.originalIndex;
-    const p = state.players[idx];
-
+  state.players.forEach((p, idx)=>{
     const row = el("div",{class:"player"});
-    row.dataset.pid = String(idx);
-
-    if(rankIdx===0) row.classList.add("rank-1");
-    if(rankIdx===1) row.classList.add("rank-2");
-    if(rankIdx===2) row.classList.add("rank-3");
-
-    // Nome: box fisso, scorre solo il testo
-    const nameWrap = el("div",{class:"pnameWrap"});
-    const nameText = el("div",{class:"pnameText"}, p.name || "Giocatore");
-    nameWrap.appendChild(nameText);
-
-    // click: cambia nome (semplice)
-    nameWrap.addEventListener("click", ()=>{
-      const v = prompt("Nome giocatore:", state.players[idx].name || "");
-      if(v === null) return;
-      state.players[idx].name = (v.trim() || "Giocatore");
+row.classList.remove("rank-1","rank-2","rank-3");
+if(idx === 0) row.classList.add("rank-1");
+if(idx === 1) row.classList.add("rank-2");
+if(idx === 2) row.classList.add("rank-3");
+    const name = el("input",{class:"pname", value: p.name});
+    // se il nome è troppo lungo, attiva scorrimento
+setTimeout(()=>{
+  if(name.scrollWidth > name.clientWidth){
+    name.classList.add("marquee");
+  } else {
+    name.classList.remove("marquee");
+  }
+}, 0);
+    name.addEventListener("input", ()=>{
+      state.players[idx].name = name.value;
       saveState();
-      renderScores();
     });
 
     const minus = el("button",{class:"mini"}, "−");
@@ -739,16 +697,8 @@ function renderScores(){
     const score = el("div",{class:"pscore"}, String(p.score));
 
     const delta = ()=> currentQuestionValue() ?? 100;
-
-    minus.addEventListener("click", ()=>{
-      applyDelta(idx, -delta(), score);
-      renderScores(); // riordina + anima
-    });
-
-    plus.addEventListener("click", ()=>{
-      applyDelta(idx, +delta(), score);
-      renderScores(); // riordina + anima
-    });
+    minus.addEventListener("click", ()=>applyDelta(idx, -delta(), score));
+    plus.addEventListener("click", ()=>applyDelta(idx, +delta(), score));
 
     const remove = el("button",{class:"xbtn danger", title:"Rimuovi giocatore"}, "✕");
     remove.addEventListener("click", ()=>{
@@ -759,43 +709,9 @@ function renderScores(){
       }
     });
 
-    row.append(nameWrap, minus, score, plus, remove);
+    row.append(name, minus, score, plus, remove);
     wrap.appendChild(row);
-
-    requestAnimationFrame(()=>updateMarquee(nameText, nameWrap));
   });
-
-  // animazione spostamenti (FLIP)
-  requestAnimationFrame(()=>{
-    wrap.querySelectorAll(".player").forEach(el=>{
-      const last = el.getBoundingClientRect();
-      const prev = first.get(el.dataset.pid);
-      if(!prev) return;
-
-      const dx = prev.left - last.left;
-      const dy = prev.top - last.top;
-
-      if(dx || dy){
-        el.style.transform = `translate(${dx}px, ${dy}px)`;
-        el.style.transition = "transform 0s";
-        requestAnimationFrame(()=>{
-          el.style.transition = "";
-          el.style.transform = "";
-        });
-      }
-    });
-  });
-}
-
-function updateMarquee(textEl, wrapEl){
-  const wrapW = wrapEl.clientWidth || 0;
-  textEl.classList.remove("marquee");
-  textEl.style.removeProperty("--wrapW");
-
-  if(textEl.scrollWidth > wrapW + 10){
-    textEl.style.setProperty("--wrapW", `${wrapW}px`);
-    textEl.classList.add("marquee");
-  }
 }
 function applyDelta(idx, d, scoreEl){
   state.players[idx].score = (Number(state.players[idx].score)||0) + d;
