@@ -451,62 +451,11 @@ video{
 }
 @keyframes spinGlow{ to{ transform: rotate(360deg); } }
     /* === NOME SCORRE SE TROPPO LUNGO (solo quando serve) === */
+
+
+.player{ transition: transform 220ms ease; }
+
 .pnameWrap{
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  border-radius: 12px;
-}
-
-.pname{
-  display: inline-block;
-  width: 100%;
-  min-width: 0;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.18);
-  color: var(--text);
-  font-weight: 950;
-  font-size: 14px;
-  outline: none;
-  padding: 8px 10px;
-  border-radius: 12px;
-  white-space: nowrap;
-}
-
-.pname.marquee{
-  width: max-content;              /* diventa più largo del box */
-  will-change: transform;
-  animation: nameMarquee 7s linear infinite;
-}
-
-@keyframes nameMarquee{
-  0%   { transform: translateX(0); }
-  45%  { transform: translateX(calc(-100% + var(--wrapW))); }
-  55%  { transform: translateX(calc(-100% + var(--wrapW))); }
-  100% { transform: translateX(0); }
-}
-
-/* === PODIO: oro argento bronzo === */
-.player.rank-1{ box-shadow: inset 0 0 0 1px rgba(255,215,0,.30); border-color: rgba(255,215,0,.28); }
-.player.rank-2{ box-shadow: inset 0 0 0 1px rgba(192,192,192,.28); border-color: rgba(192,192,192,.24); }
-.player.rank-3{ box-shadow: inset 0 0 0 1px rgba(205,127,50,.28); border-color: rgba(205,127,50,.24); }
-
-.player.rank-1 .pscore{ background: linear-gradient(180deg, rgba(255,215,0,.22), rgba(0,0,0,.18)); }
-.player.rank-2 .pscore{ background: linear-gradient(180deg, rgba(192,192,192,.18), rgba(0,0,0,.18)); }
-.player.rank-3 .pscore{ background: linear-gradient(180deg, rgba(205,127,50,.20), rgba(0,0,0,.18)); }
-    /* ===============================
-   SCOREBOARD: marquee solo testo + podio + animazione reorder
-   =============================== */
-
-/* riga giocatore: serve per animazione quando cambia ordine */
-.player{
-  transition: transform 220ms ease, opacity 220ms ease;
-}
-
-/* wrapper fisso del nome (NON si muove) */
-.pnameWrap{
-  position: relative;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -517,7 +466,6 @@ video{
   cursor: pointer;
 }
 
-/* testo del nome (è LUI che scorre) */
 .pnameText{
   display: inline-block;
   white-space: nowrap;
@@ -527,7 +475,6 @@ video{
   transform: translateX(0);
 }
 
-/* attiva marquee solo quando serve */
 .pnameText.marquee{
   will-change: transform;
   animation: nameMarquee 7s linear infinite;
@@ -540,7 +487,7 @@ video{
   100% { transform: translateX(0); }
 }
 
-/* PODIO: oro argento bronzo */
+/* Podio */
 .player.rank-1{ box-shadow: inset 0 0 0 1px rgba(255,215,0,.30); border-color: rgba(255,215,0,.28); }
 .player.rank-2{ box-shadow: inset 0 0 0 1px rgba(192,192,192,.28); border-color: rgba(192,192,192,.24); }
 .player.rank-3{ box-shadow: inset 0 0 0 1px rgba(205,127,50,.28); border-color: rgba(205,127,50,.24); }
@@ -747,44 +694,38 @@ function updateUsedCount(){
    SCOREBOARD (A DESTRA)
 ====================== */
 function renderScores(){
-  const wrap = $("scoreArea");
+  const wrap = $("scores");
 
-  // 1) salva la posizione "prima" (per animazione spostamenti)
+  // salva posizioni "prima" per animare lo spostamento
   const first = new Map();
   wrap.querySelectorAll(".player").forEach(el=>{
     first.set(el.dataset.pid, el.getBoundingClientRect());
   });
 
-  // 2) pulisci
   wrap.innerHTML = "";
 
-  // 3) crea lista ordinata per punteggio (desc), ma conserva indice originale
+  // ordina per punteggio (desc)
   const ordered = state.players
     .map((p, originalIndex)=>({ p, originalIndex }))
-    .sort((a,b)=>{
-      const sa = Number(a.p.score)||0;
-      const sb = Number(b.p.score)||0;
-      return sb - sa;
-    });
+    .sort((a,b)=> (Number(b.p.score)||0) - (Number(a.p.score)||0));
 
-  // 4) build UI
   ordered.forEach((item, rankIdx)=>{
     const idx = item.originalIndex;
     const p = state.players[idx];
 
     const row = el("div",{class:"player"});
-    row.dataset.pid = String(idx); // id stabile per animazione
+    row.dataset.pid = String(idx);
 
-    if(rankIdx === 0) row.classList.add("rank-1");
-    if(rankIdx === 1) row.classList.add("rank-2");
-    if(rankIdx === 2) row.classList.add("rank-3");
+    if(rankIdx===0) row.classList.add("rank-1");
+    if(rankIdx===1) row.classList.add("rank-2");
+    if(rankIdx===2) row.classList.add("rank-3");
 
-    // NOME: box fermo, scorre SOLO testo
+    // Nome: box fisso, scorre solo il testo
     const nameWrap = el("div",{class:"pnameWrap"});
-    const nameText = el("div",{class:"pnameText"}, (p.name || "Giocatore"));
+    const nameText = el("div",{class:"pnameText"}, p.name || "Giocatore");
     nameWrap.appendChild(nameText);
 
-    // click sul nome -> cambia nome (semplice)
+    // click: cambia nome (semplice)
     nameWrap.addEventListener("click", ()=>{
       const v = prompt("Nome giocatore:", state.players[idx].name || "");
       if(v === null) return;
@@ -801,12 +742,12 @@ function renderScores(){
 
     minus.addEventListener("click", ()=>{
       applyDelta(idx, -delta(), score);
-      renderScores(); // riordina e anima
+      renderScores(); // riordina + anima
     });
 
     plus.addEventListener("click", ()=>{
       applyDelta(idx, +delta(), score);
-      renderScores(); // riordina e anima
+      renderScores(); // riordina + anima
     });
 
     const remove = el("button",{class:"xbtn danger", title:"Rimuovi giocatore"}, "✕");
@@ -821,11 +762,10 @@ function renderScores(){
     row.append(nameWrap, minus, score, plus, remove);
     wrap.appendChild(row);
 
-    // attiva marquee solo se serve
     requestAnimationFrame(()=>updateMarquee(nameText, nameWrap));
   });
 
-  // 5) animazione spostamenti (FLIP)
+  // animazione spostamenti (FLIP)
   requestAnimationFrame(()=>{
     wrap.querySelectorAll(".player").forEach(el=>{
       const last = el.getBoundingClientRect();
@@ -847,42 +787,14 @@ function renderScores(){
   });
 }
 
-/* Scorrimento SOLO quando il testo è più lungo del box */
 function updateMarquee(textEl, wrapEl){
   const wrapW = wrapEl.clientWidth || 0;
-
   textEl.classList.remove("marquee");
   textEl.style.removeProperty("--wrapW");
 
-  // scrollWidth misura larghezza reale del testo
   if(textEl.scrollWidth > wrapW + 10){
     textEl.style.setProperty("--wrapW", `${wrapW}px`);
     textEl.classList.add("marquee");
-  }
-}
-
-/* attiva lo scorrimento solo se il testo è più largo del box */
-function updateMarquee(inputEl, wrapEl){
-  const wrapW = wrapEl.clientWidth || 0;
-
-  // misura larghezza del testo con un clone invisibile
-  const meas = document.createElement("span");
-  meas.style.position = "absolute";
-  meas.style.visibility = "hidden";
-  meas.style.whiteSpace = "nowrap";
-  meas.style.font = getComputedStyle(inputEl).font;
-  meas.textContent = inputEl.value || "";
-  document.body.appendChild(meas);
-  const textW = meas.getBoundingClientRect().width;
-  meas.remove();
-
-  // se sta dentro, niente marquee
-  inputEl.classList.remove("marquee");
-  inputEl..removeProperty("--wrapW");
-
-  if(textW > wrapW + 10){
-    inputEl.style.setProperty("--wrapW", `${wrapW}px`);
-    inputEl.classList.add("marquee");
   }
 }
 function applyDelta(idx, d, scoreEl){
